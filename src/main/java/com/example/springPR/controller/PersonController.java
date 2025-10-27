@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springPR.Model.entity.Person;
+import com.example.springPR.PersonNotFoundException;
 import com.example.springPR.repository.PersonRepo;
 
 import lombok.AllArgsConstructor;
@@ -41,10 +42,7 @@ public class PersonController {
     @GetMapping("/{id}")
     public ResponseEntity<Person> getPersonById(@PathVariable Long id) {
         Optional<Person> person = personRepo.findById(id);
-        if(person.isPresent()){
-            return new ResponseEntity<>(person.get(), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return person.map(value->new ResponseEntity<>(value,HttpStatus.OK)).orElseThrow(()-> new PersonNotFoundException("person not found"));
     }
 
     @PutMapping("/{id}")
@@ -58,7 +56,7 @@ public class PersonController {
             Person updatePerson = personRepo.save(existingPerson);
             return new ResponseEntity<>(updatePerson, HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        throw new PersonNotFoundException("Personne not found");
     }
     
     @DeleteMapping("/id")
@@ -68,6 +66,6 @@ public class PersonController {
             personRepo.delete(person.get());
             return new ResponseEntity<>(HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        throw new PersonNotFoundException("Personne not found");
     }
 }
